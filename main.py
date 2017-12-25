@@ -106,5 +106,38 @@ def applediary():
             else:
                 newsInsert(data)
 
+def udn():
+    def getList():
+        s = getSoup('https://udn.com/news/breaknews/')
+        ss = s.find(id="breaknews_body").find('dl').findAll('h2')
+        url = []
+        for i in ss:
+            url.append('https://udn.com'+i.find('a')['href'])
+        return url
+    def getContent(url):
+        s = getSoup(url)
+        try:
+            print(url)
+            title = s.find(class_='story_art_title').text
+            ss = s.find(id='story_body_content').findAll('p')
+            main = ""
+            for i in ss:
+                main += i.text
+            print("Success")
+            return (url, title, main)
+        except:
+            print("Fail")
+            return None
+    
+    l = getList()
 
-applediary()
+    for i in l:
+        if Checkindb(i):
+            print("Already have.")
+            continue
+        else:
+            data = getContent(i)
+            if data == None:
+                pass
+            else:
+                newsInsert(data)
