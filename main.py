@@ -12,7 +12,7 @@ def getSoup(url):
     return s
 
 def newsInsert(data):
-    conn = sqlite3.connect('news.db')
+    conn = sqlite3.connect('/home/bemg/newspaper/news.db')
     c = conn.cursor()
     c.execute("SELECT * FROM news WHERE url = '%s'" % data[0])
     check = c.fetchall()
@@ -24,7 +24,7 @@ def newsInsert(data):
     conn.close()
 
 def Checkindb(url):
-    conn = sqlite3.connect('news.db')
+    conn = sqlite3.connect('/home/bemg/newspaper/news.db')
     c = conn.cursor()
     c.execute("SELECT * FROM news WHERE url = '%s'" % url)
     check = c.fetchall()
@@ -35,8 +35,7 @@ def Checkindb(url):
 
 def ettoday():
     def getList():
-        r = page_scroll_to_bottom("https://www.ettoday.net/news/news-list.htm")
-        s = bs4.BeautifulSoup(r, 'lxml')
+        s = getSoup('https://www.ettoday.net/news/news-list.htm')
         ss = s.find(class_="part_list_2").findAll('a')
         url_list = []
         for i in ss:
@@ -123,6 +122,7 @@ def udn():
             main = ""
             for i in ss:
                 main += i.text
+                main += "\n\n"
             print("Success")
             return (url, title, main)
         except:
@@ -141,3 +141,48 @@ def udn():
                 pass
             else:
                 newsInsert(data)
+
+def chinatimes():
+    def getList():
+        s = getSoup("http://www.chinatimes.com/realtimenews/")
+        ss = s.find(class_='listRight').findAll('h2')
+        url = []
+        for i in ss:
+            url.append('http://www.chinatimes.com'+i.find('a')['href'])
+        return url
+    def getContent(url):
+        s = getSoup(url)
+        try:
+            print(url)
+            title = s.find(class_='topich1').find('h1').text
+            title = title.replace('\n', '')
+            title = title.replace('\r', '')
+            title = title.replace(' ', '')
+            main = ""
+            ss = s.find(class_='arttext marbotm clear-fix').findAll('p')
+            for i in ss:
+                main += i.text
+                main += "\n\n"
+            print("Succuss")
+            return (url, title, main)
+        except:
+            print("Fail")
+            return None
+
+    l = getList()
+
+    for i in l:
+        if Checkindb(i):
+            print("Already have.")
+            continue
+        else:
+            data = getContent(i)
+            if data == None:
+                pass
+            else:
+                newsInsert(data)
+
+ettoday()
+applediary()
+udn()
+chinatimes()
