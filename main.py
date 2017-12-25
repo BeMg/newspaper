@@ -4,6 +4,7 @@ import json
 import sqlite3
 import re
 from test import page_scroll_to_bottom
+import os
 
 
 def getSoup(url):
@@ -12,7 +13,8 @@ def getSoup(url):
     return s
 
 def newsInsert(data):
-    conn = sqlite3.connect('/home/bemg/newspaper/news.db')
+    path = os.path.expanduser("~/newspaper/news.db")
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute("SELECT * FROM news WHERE url = '%s'" % data[0])
     check = c.fetchall()
@@ -24,7 +26,8 @@ def newsInsert(data):
     conn.close()
 
 def Checkindb(url):
-    conn = sqlite3.connect('/home/bemg/newspaper/news.db')
+    path = os.path.expanduser("~/newspaper/news.db")
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute("SELECT * FROM news WHERE url = '%s'" % url)
     check = c.fetchall()
@@ -182,7 +185,9 @@ def chinatimes():
             else:
                 newsInsert(data)
 
-ettoday()
-applediary()
-udn()
-chinatimes()
+
+if __name__ == "__main__":
+    ettoday()
+    applediary()
+    udn()
+    chinatimes()
